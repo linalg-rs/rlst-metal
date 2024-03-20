@@ -42,6 +42,7 @@ typedef struct rlst_mtl_buffer_s *rlst_mtl_buffer_p;
 typedef struct rlst_mtl_command_queue_s *rlst_mtl_command_queue_p;
 typedef struct rlst_mtl_command_buffer_s *rlst_mtl_command_buffer_p;
 typedef struct rlst_mtl_compute_command_encoder_s *rlst_mtl_compute_command_encoder_p;
+typedef struct rlst_mtl_mps_matrix_descriptor_s *rlst_mtl_mps_matrix_descriptor_p;
 
 /* Autorelease pool */
 
@@ -69,8 +70,10 @@ rlst_mtl_command_buffer_p rlst_mtl_command_queue_command_buffer(rlst_mtl_command
 
 void rlst_mtl_command_buffer_wait_until_completed(rlst_mtl_command_buffer_p p_buffer);
 void rlst_mtl_command_buffer_commit(rlst_mtl_command_buffer_p p_buffer);
-rlst_mtl_compute_command_encoder_p rlst_mtl_command_buffer_compute_command_encoder(rlst_mtl_command_buffer_p p_buffer, unsigned long dispatch_type);
+rlst_mtl_compute_command_encoder_p rlst_mtl_command_buffer_compute_command_encoder(rlst_mtl_command_buffer_p p_buffer, unsigned int dispatch_type);
 
+/* MPS Matrix Descriptor */
+rlst_mtl_compute_command_encoder_p rlst_mtl_mps_matrix_descriptor(unsigned long rows, unsigned long columns, unsigned long matrices, unsigned long rowBytes, unsigned long matrixBytes, unsigned int data_type);
 
 
 #endif /* RLST_METAL_H */

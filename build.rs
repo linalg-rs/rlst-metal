@@ -9,16 +9,16 @@ fn main() {
 
     // Note that there are a number of downsides to this approach, the comments
     // below detail how to improve the portability of these commands.
-    Command::new("clang")
+    let output = Command::new("clang")
         .args(&["metal/rlst_metal.m", "-c", "-fPIC", "-o"])
         .arg(&format!("{}/rlst_metal.o", out_dir))
-        .status()
-        .unwrap();
+        .output()
+        .expect("Failed to compile");
     Command::new("ar")
-        .args(&["crus", "librlst_metal.a", "device.o"])
+        .args(&["crus", "librlst_metal.a", "rlst_metal.o"])
         .current_dir(&Path::new(&out_dir))
-        .status()
-        .unwrap();
+        .output()
+        .expect("Failed to create archive.");
 
     let sdk_path = "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk";
 
@@ -46,5 +46,5 @@ fn main() {
     println!("cargo:rustc-link-lib=framework=CoreGraphics");
     println!("cargo:rustc-link-lib=framework=Metal");
     println!("cargo:rustc-link-lib=framework=MetalPerformanceShaders");
-    println!("cargo:rerun-if-changed=src/device.m");
+    println!("cargo:rerun-if-changed=src/rlst_metal.m");
 }

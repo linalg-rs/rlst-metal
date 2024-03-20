@@ -26,7 +26,8 @@ rlst_mtl_buffer_p rlst_mtl_device_new_buffer(rlst_mtl_device_p p_device,
   return (rlst_mtl_buffer_p)[device newBufferWithLength:length options:options];
 }
 
-rlst_mtl_command_queue_p rlst_mtl_device_new_command_queue(rlst_mtl_device_p p_device) {
+rlst_mtl_command_queue_p
+rlst_mtl_device_new_command_queue(rlst_mtl_device_p p_device) {
   return (rlst_mtl_command_queue_p)[(id<MTLDevice>)p_device newCommandQueue];
 }
 
@@ -44,23 +45,41 @@ void *rlst_mtl_buffer_contents(rlst_mtl_buffer_p p_buffer) {
 /* Command Queue */
 
 void rlst_mtl_command_queue_release(rlst_mtl_command_queue_p p_queue) {
-  [id<MTLCommandQueue>p_queue release];
+  [(id<MTLCommandQueue>) p_queue release];
 }
 
-rlst_mtl_command_buffer_p rlst_mtl_command_queue_command_buffer(rlst_mtl_command_queue_p p_queue) {
-  return (rlst_mtl_command_buffer_p)[id<MTLCommandQueue>p_queue commandBuffer];
+rlst_mtl_command_buffer_p
+rlst_mtl_command_queue_command_buffer(rlst_mtl_command_queue_p p_queue) {
+  return (rlst_mtl_command_buffer_p)[(id<MTLCommandQueue>) p_queue commandBuffer];
 }
 
 /* Command Buffer */
 
-void rlst_mtl_command_buffer_wait_until_completed(rlst_mtl_command_buffer_p p_buffer) {
+void rlst_mtl_command_buffer_wait_until_completed(
+    rlst_mtl_command_buffer_p p_buffer) {
   [(id<MTLCommandBuffer>)p_buffer waitUntilCompleted];
 }
 
 void rlst_mtl_command_buffer_commit(rlst_mtl_command_buffer_p p_buffer) {
-    [(id<MTLCommandBuffer>)p_buffer commit];
+  [(id<MTLCommandBuffer>)p_buffer commit];
 }
 
-rlst_mtl_compute_command_encoder_p rlst_mtl_command_buffer_compute_command_encoder(rlst_mtl_command_buffer_p p_buffer, unsigned int dispatch_type){
-  return (rlst_mtl_compute_command_encoder_p)[(id<MTLCommandBuffer>)p_buffer computeCommandEncoderWithDispatchType: dispatch_type]
+rlst_mtl_compute_command_encoder_p
+rlst_mtl_command_buffer_compute_command_encoder(
+    rlst_mtl_command_buffer_p p_buffer, unsigned int dispatch_type) {
+  return (rlst_mtl_compute_command_encoder_p)[(id<MTLCommandBuffer>)p_buffer
+      computeCommandEncoderWithDispatchType:dispatch_type];
+}
+
+rlst_mtl_compute_command_encoder_p rlst_mtl_mps_matrix_descriptor(
+    unsigned long rows, unsigned long columns, unsigned long matrices,
+    unsigned long rowBytes, unsigned long matrixBytes, unsigned int dataType) {
+  MPSMatrixDescriptor *desc =
+      [MPSMatrixDescriptor matrixDescriptorWithRows:rows
+                                            columns:columns
+                                           matrices:matrices
+                                           rowBytes:rowBytes
+                                        matrixBytes:matrixBytes
+                                           dataType:dataType];
+  return (rlst_mtl_compute_command_encoder_p)desc;
 }
