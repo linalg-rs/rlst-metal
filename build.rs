@@ -1,24 +1,14 @@
 // build.rs
 
 use std::env;
-use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::path::PathBuf;
 
 fn main() {
     let out_dir = env::var("OUT_DIR").unwrap();
 
-    // Note that there are a number of downsides to this approach, the comments
-    // below detail how to improve the portability of these commands.
-    let output = Command::new("clang")
-        .args(&["metal/rlst_metal.m", "-c", "-fPIC", "-o"])
-        .arg(&format!("{}/rlst_metal.o", out_dir))
-        .output()
-        .expect("Failed to compile");
-    Command::new("ar")
-        .args(&["crus", "librlst_metal.a", "rlst_metal.o"])
-        .current_dir(&Path::new(&out_dir))
-        .output()
-        .expect("Failed to create archive.");
+    cc::Build::new()
+        .file("metal/rlst_metal.m")
+        .compile("rlst_metal");
 
     let sdk_path = "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk";
 

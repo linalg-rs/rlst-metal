@@ -38,19 +38,20 @@ void rlst_mtl_buffer_release(rlst_mtl_buffer_p p_buffer) {
 }
 
 void *rlst_mtl_buffer_contents(rlst_mtl_buffer_p p_buffer) {
-  id<MTLBuffer> buffer = (id<MTLBuffer>)buffer;
+  id<MTLBuffer> buffer = (id<MTLBuffer>)p_buffer;
   return [buffer contents];
 }
 
 /* Command Queue */
 
 void rlst_mtl_command_queue_release(rlst_mtl_command_queue_p p_queue) {
-  [(id<MTLCommandQueue>) p_queue release];
+  [(id<MTLCommandQueue>)p_queue release];
 }
 
 rlst_mtl_command_buffer_p
 rlst_mtl_command_queue_command_buffer(rlst_mtl_command_queue_p p_queue) {
-  return (rlst_mtl_command_buffer_p)[(id<MTLCommandQueue>) p_queue commandBuffer];
+  return (
+      rlst_mtl_command_buffer_p)[(id<MTLCommandQueue>)p_queue commandBuffer];
 }
 
 /* Command Buffer */
@@ -71,7 +72,9 @@ rlst_mtl_command_buffer_compute_command_encoder(
       computeCommandEncoderWithDispatchType:dispatch_type];
 }
 
-rlst_mtl_compute_command_encoder_p rlst_mtl_mps_matrix_descriptor(
+/* Matrix descriptor */
+
+rlst_mtl_mps_matrix_descriptor_p rlst_mtl_mps_matrix_descriptor(
     unsigned long rows, unsigned long columns, unsigned long matrices,
     unsigned long rowBytes, unsigned long matrixBytes, unsigned int dataType) {
   MPSMatrixDescriptor *desc =
@@ -81,5 +84,28 @@ rlst_mtl_compute_command_encoder_p rlst_mtl_mps_matrix_descriptor(
                                            rowBytes:rowBytes
                                         matrixBytes:matrixBytes
                                            dataType:dataType];
-  return (rlst_mtl_compute_command_encoder_p)desc;
+  return (rlst_mtl_mps_matrix_descriptor_p)desc;
+}
+
+rlst_mtl_mps_matrix_p
+rlst_mtl_mps_matrix(rlst_mtl_buffer_p p_buffer,
+                    rlst_mtl_mps_matrix_descriptor_p p_desc) {
+  return (rlst_mtl_mps_matrix_p)
+      [[MPSMatrix alloc] initWithBuffer:(id<MTLBuffer>)p_buffer
+                             descriptor:(MPSMatrixDescriptor *)p_desc];
+}
+
+rlst_mtl_mps_matrix_multiplication_p rlst_mtl_mps_matrix_multiplication(
+    rlst_mtl_device_p p_device, bool transposeLeft, bool transposeRight,
+    unsigned long resultRows, unsigned long resultColumns,
+    unsigned long interiorColumns, double alpha, double beta) {
+  return (rlst_mtl_mps_matrix_multiplication_p)
+      [[MPSMatrixMultiplication alloc] initWithDevice:(id<MTLDevice>)p_device
+                                        transposeLeft:transposeLeft
+                                       transposeRight:transposeRight
+                                           resultRows:resultRows
+                                        resultColumns:resultColumns
+                                      interiorColumns:interiorColumns
+                                                alpha:alpha
+                                                 beta:beta];
 }
