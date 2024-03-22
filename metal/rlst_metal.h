@@ -54,6 +54,7 @@ void rlst_mtl_autorelease_pool_drain(rlst_mtl_autorelease_pool_p p_pool);
 /* Device definitions */
 
 rlst_mtl_device_p rlst_mtl_new_default_device();
+void rlst_mtl_device_release(rlst_mtl_device_p p_device);
 char *rlst_mtl_device_name(rlst_mtl_device_p p_device);
 rlst_mtl_buffer_p rlst_mtl_device_new_buffer(rlst_mtl_device_p p_device,
                                              unsigned long length,
@@ -76,6 +77,16 @@ rlst_mtl_compute_command_encoder_p rlst_mtl_command_buffer_compute_command_encod
 
 /* MPS Matrix Descriptor */
 rlst_mtl_mps_matrix_descriptor_p rlst_mtl_mps_matrix_descriptor(unsigned long rows, unsigned long columns, unsigned long matrices, unsigned long rowBytes, unsigned long matrixBytes, unsigned int data_type);
+size_t rlst_mtl_mps_matrix_descriptor_row_bytes_from_columns(unsigned long columns, unsigned int dataType);
+unsigned long rlst_mtl_mps_matrix_descriptor_rows(rlst_mtl_mps_matrix_descriptor_p p_desc);
+unsigned long rlst_mtl_mps_matrix_descriptor_columns(rlst_mtl_mps_matrix_descriptor_p p_desc);
+
+unsigned long rlst_mtl_mps_matrix_descriptor_matrices(rlst_mtl_mps_matrix_descriptor_p p_desc);
+
+unsigned long rlst_mtl_mps_matrix_descriptor_row_bytes(rlst_mtl_mps_matrix_descriptor_p p_desc);
+
+unsigned long rlst_mtl_mps_matrix_descriptor_matrix_bytes(rlst_mtl_mps_matrix_descriptor_p p_desc);
+
 
 /* MPS Matrix */
 rlst_mtl_mps_matrix_p rlst_mtl_mps_matrix(rlst_mtl_buffer_p p_buffer, rlst_mtl_mps_matrix_descriptor_p p_desc);

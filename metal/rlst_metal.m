@@ -14,6 +14,11 @@ rlst_mtl_device_p rlst_mtl_new_default_device() {
   return (rlst_mtl_device_p)device;
 }
 
+void rlst_mtl_device_release(rlst_mtl_device_p p_device) {
+  id<MTLDevice> device = (id<MTLDevice>)p_device;
+  [device release];
+}
+
 char *rlst_mtl_device_name(rlst_mtl_device_p p_device) {
   id<MTLDevice> device = (id<MTLDevice>)p_device;
   return (char *)[device.name UTF8String];
@@ -86,6 +91,32 @@ rlst_mtl_mps_matrix_descriptor_p rlst_mtl_mps_matrix_descriptor(
                                            dataType:dataType];
   return (rlst_mtl_mps_matrix_descriptor_p)desc;
 }
+
+size_t rlst_mtl_mps_matrix_descriptor_row_bytes_from_columns(unsigned long columns,
+                                           unsigned int dataType) {
+  return [MPSMatrixDescriptor rowBytesFromColumns:columns dataType:dataType];
+}
+
+
+unsigned long rlst_mtl_mps_matrix_descriptor_rows(rlst_mtl_mps_matrix_descriptor_p p_desc) {
+  return [(MPSMatrixDescriptor* )p_desc rows];
+}
+unsigned long rlst_mtl_mps_matrix_descriptor_columns(rlst_mtl_mps_matrix_descriptor_p p_desc) {
+  return [(MPSMatrixDescriptor* )p_desc columns];
+}
+unsigned long rlst_mtl_mps_matrix_descriptor_matrices(rlst_mtl_mps_matrix_descriptor_p p_desc) {
+  return [(MPSMatrixDescriptor* )p_desc matrices];
+}
+
+unsigned long rlst_mtl_mps_matrix_descriptor_row_bytes(rlst_mtl_mps_matrix_descriptor_p p_desc) {
+  return [(MPSMatrixDescriptor* )p_desc rowBytes];
+}
+
+unsigned long rlst_mtl_mps_matrix_descriptor_matrix_bytes(rlst_mtl_mps_matrix_descriptor_p p_desc) {
+  return [(MPSMatrixDescriptor* )p_desc matrixBytes];
+}
+
+
 
 rlst_mtl_mps_matrix_p
 rlst_mtl_mps_matrix(rlst_mtl_buffer_p p_buffer,
