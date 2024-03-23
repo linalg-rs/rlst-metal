@@ -62,18 +62,23 @@ rlst_mtl_command_queue_command_buffer(rlst_mtl_command_queue_p p_queue) {
 /* Command Buffer */
 
 void rlst_mtl_command_buffer_wait_until_completed(
-    rlst_mtl_command_buffer_p p_buffer) {
-  [(id<MTLCommandBuffer>)p_buffer waitUntilCompleted];
+    rlst_mtl_command_buffer_p p_command_buffer) {
+  [(id<MTLCommandBuffer>)p_command_buffer waitUntilCompleted];
 }
 
-void rlst_mtl_command_buffer_commit(rlst_mtl_command_buffer_p p_buffer) {
-  [(id<MTLCommandBuffer>)p_buffer commit];
+void rlst_mtl_command_buffer_commit(rlst_mtl_command_buffer_p p_command_buffer) {
+  [(id<MTLCommandBuffer>)p_command_buffer commit];
+}
+
+
+void rlst_mtl_command_buffer_release(rlst_mtl_command_buffer_p p_command_buffer) {
+   [(id<MTLCommandBuffer>)p_command_buffer release]; 
 }
 
 rlst_mtl_compute_command_encoder_p
 rlst_mtl_command_buffer_compute_command_encoder(
-    rlst_mtl_command_buffer_p p_buffer, unsigned int dispatch_type) {
-  return (rlst_mtl_compute_command_encoder_p)[(id<MTLCommandBuffer>)p_buffer
+    rlst_mtl_command_buffer_p p_command_buffer, unsigned int dispatch_type) {
+  return (rlst_mtl_compute_command_encoder_p)[(id<MTLCommandBuffer>)p_command_buffer
       computeCommandEncoderWithDispatchType:dispatch_type];
 }
 
@@ -91,6 +96,7 @@ rlst_mtl_mps_matrix_descriptor_p rlst_mtl_mps_matrix_descriptor(
                                            dataType:dataType];
   return (rlst_mtl_mps_matrix_descriptor_p)desc;
 }
+
 
 size_t rlst_mtl_mps_matrix_descriptor_row_bytes_from_columns(unsigned long columns,
                                            unsigned int dataType) {
@@ -126,6 +132,11 @@ rlst_mtl_mps_matrix(rlst_mtl_buffer_p p_buffer,
                              descriptor:(MPSMatrixDescriptor *)p_desc];
 }
 
+
+void rlst_mtl_mps_matrix_release(rlst_mtl_mps_matrix_p p_matrix) {
+  [(MPSMatrix*)p_matrix release];
+}
+
 rlst_mtl_mps_matrix_multiplication_p rlst_mtl_mps_matrix_multiplication(
     rlst_mtl_device_p p_device, bool transposeLeft, bool transposeRight,
     unsigned long resultRows, unsigned long resultColumns,
@@ -139,4 +150,12 @@ rlst_mtl_mps_matrix_multiplication_p rlst_mtl_mps_matrix_multiplication(
                                       interiorColumns:interiorColumns
                                                 alpha:alpha
                                                  beta:beta];
+}
+
+void rlst_mtl_mps_matrix_multiplication_release(rlst_mtl_mps_matrix_multiplication_p p_matmul) {
+  [(MPSMatrixMultiplication *)p_matmul release];
+}
+
+void rlst_mtl_mps_matrix_multiplication_encode_to_command_buffer(rlst_mtl_mps_matrix_multiplication_p p_matmul, rlst_mtl_command_buffer_p p_commandBuffer, rlst_mtl_mps_matrix_p p_leftMatrix, rlst_mtl_mps_matrix_p p_rightMatrix, rlst_mtl_mps_matrix_p p_resultMatrix) {
+  [(MPSMatrixMultiplication *)p_matmul encodeToCommandBuffer: (id<MTLCommandBuffer>)p_commandBuffer leftMatrix:(MPSMatrix *)p_leftMatrix rightMatrix: (MPSMatrix *)p_rightMatrix resultMatrix: (MPSMatrix *)p_resultMatrix];
 }

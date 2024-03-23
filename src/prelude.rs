@@ -2,6 +2,7 @@
 
 use crate::raw;
 
+#[derive(Clone, Copy)]
 #[repr(u32)]
 pub enum ResourceOptions {
     StorageModeManaged = raw::RLSTMtlResourceOptions_RLST_MTL_RESOURCE_STORAGE_MODE_MANAGED,
@@ -15,6 +16,7 @@ pub enum ResourceOptions {
         raw::RLSTMtlResourceOptions_RLST_MTL_RESOURCE_CPU_CACHE_MODE_WRITE_COMBINED,
 }
 
+#[derive(Clone, Copy)]
 #[repr(u32)]
 pub enum MpsDataType {
     F32 = raw::RLSTMtlMpsDataType_RLST_MTL_MPS_FLOAT32,
@@ -56,6 +58,32 @@ impl MetalDevice {
             .map(|s| s.to_owned())
             .unwrap()
     }
+
+    pub unsafe fn command_queue(&self) -> MetalCommandQueue {
+        MetalCommandQueue {
+            queue_p: raw::rlst_mtl_device_new_command_queue(self.device_p),
+        }
+    }
+}
+
+pub struct MetalCommandQueue {
+    queue_p: raw::rlst_mtl_command_queue_p,
+}
+
+impl MetalCommandQueue {
+    pub unsafe fn command_buffer(&self) -> MetalCommandBuffer {
+        MetalCommandBuffer {
+            command_buffer_p: raw::rlst_mtl_command_queue_command_buffer(self.queue_p),
+        }
+    }
+}
+
+impl Drop for MetalCommandQueue {
+    fn drop(&mut self) {
+        unsafe {
+            raw::rlst_mtl_command_queue_release(self.queue_p);
+        }
+    }
 }
 
 pub struct MetalBuffer {
@@ -71,9 +99,14 @@ impl MetalBuffer {
         }
     }
 
-    pub unsafe fn contents<T: Sized>(&mut self) -> &mut [T] {
+    pub unsafe fn contents_mut<T: Sized>(&mut self) -> &mut [T] {
         let ptr = raw::rlst_mtl_buffer_contents(self.buffer_p);
         std::slice::from_raw_parts_mut(ptr as *mut T, self.nbytes / std::mem::size_of::<T>())
+    }
+
+    pub unsafe fn contents<T: Sized>(&self) -> &[T] {
+        let ptr = raw::rlst_mtl_buffer_contents(self.buffer_p);
+        std::slice::from_raw_parts(ptr as *mut T, self.nbytes / std::mem::size_of::<T>())
     }
 }
 
@@ -81,6 +114,28 @@ impl Drop for MetalBuffer {
     fn drop(&mut self) {
         unsafe {
             raw::rlst_mtl_buffer_release(self.buffer_p);
+        }
+    }
+}
+
+pub struct MetalCommandBuffer {
+    command_buffer_p: raw::rlst_mtl_command_buffer_p,
+}
+
+impl MetalCommandBuffer {
+    pub unsafe fn commit(&self) {
+        raw::rlst_mtl_command_buffer_commit(self.command_buffer_p);
+    }
+
+    pub unsafe fn wait_until_completed(&self) {
+        raw::rlst_mtl_command_buffer_wait_until_completed(self.command_buffer_p);
+    }
+}
+
+impl Drop for MetalCommandBuffer {
+    fn drop(&mut self) {
+        unsafe {
+            raw::rlst_mtl_command_buffer_release(self.command_buffer_p);
         }
     }
 }
@@ -116,6 +171,10 @@ impl MpsMatrixDescriptor {
         raw::rlst_mtl_mps_matrix_descriptor_row_bytes_from_columns(columns as u64, data_type as u32)
     }
 
+    pub unsafe fn rows(&self) -> usize {
+        raw::rlst_mtl_mps_matrix_descriptor_rows(self.desc) as usize
+    }
+
     pub unsafe fn columns(&self) -> usize {
         raw::rlst_mtl_mps_matrix_descriptor_columns(self.desc) as usize
     }
@@ -130,5 +189,99 @@ impl MpsMatrixDescriptor {
 
     pub unsafe fn matrix_bytes(&self) -> usize {
         raw::rlst_mtl_mps_matrix_descriptor_matrix_bytes(self.desc) as usize
+    }
+}
+
+pub struct MpsMatrix {
+    matrix_p: raw::rlst_mtl_mps_matrix_p,
+    buffer: MetalBuffer,
+    descriptor: MpsMatrixDescriptor,
+}
+
+impl MpsMatrix {
+    pub unsafe fn new(buffer: MetalBuffer, descriptor: MpsMatrixDescriptor) -> Self {
+        Self {
+            matrix_p: raw::rlst_mtl_mps_matrix(buffer.buffer_p, descriptor.desc),
+            buffer,
+            descriptor,
+        }
+    }
+
+    pub unsafe fn buffer(&self) -> &MetalBuffer {
+        &self.buffer
+    }
+
+    pub unsafe fn descriptor(&self) -> &MpsMatrixDescriptor {
+        &self.descriptor
+    }
+
+    pub unsafe fn contents_mut<T: Sized>(&mut self) -> &mut [T] {
+        self.buffer.contents_mut()
+    }
+
+    pub unsafe fn contents<T: Sized>(&self) -> &[T] {
+        self.buffer.contents()
+    }
+}
+
+impl Drop for MpsMatrix {
+    fn drop(&mut self) {
+        unsafe {
+            raw::rlst_mtl_mps_matrix_release(self.matrix_p);
+        }
+    }
+}
+
+pub struct MpsMatrixMultiplication {
+    matrix_mult_p: raw::rlst_mtl_mps_matrix_multiplication_p,
+}
+
+impl MpsMatrixMultiplication {
+    pub unsafe fn new(
+        device: &MetalDevice,
+        transpose_left: bool,
+        transpose_right: bool,
+        result_rows: usize,
+        result_columns: usize,
+        interior_columns: usize,
+        alpha: f64,
+        beta: f64,
+    ) -> Self {
+        Self {
+            matrix_mult_p: raw::rlst_mtl_mps_matrix_multiplication(
+                device.device_p,
+                transpose_left,
+                transpose_right,
+                result_rows as u64,
+                result_columns as u64,
+                interior_columns as u64,
+                alpha,
+                beta,
+            ),
+        }
+    }
+
+    pub unsafe fn encode_to_command_buffer(
+        &self,
+        command_buffer: &mut MetalCommandBuffer,
+        left_matrix: &MpsMatrix,
+        right_matrix: &MpsMatrix,
+        result_matrix: &mut MpsMatrix,
+    ) {
+        raw::rlst_mtl_mps_matrix_multiplication_encode_to_command_buffer(
+            self.matrix_mult_p,
+            command_buffer.command_buffer_p,
+            left_matrix.matrix_p,
+            right_matrix.matrix_p,
+            result_matrix.matrix_p,
+        );
+    }
+}
+
+impl Drop for MpsMatrixMultiplication {
+    fn drop(&mut self) {
+        unsafe {
+            raw::rlst_mtl_mps_matrix_multiplication_release(self.matrix_mult_p);
+        }
     }
 }
