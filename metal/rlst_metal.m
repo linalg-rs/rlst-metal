@@ -71,10 +71,6 @@ void rlst_mtl_command_buffer_commit(rlst_mtl_command_buffer_p p_command_buffer) 
 }
 
 
-void rlst_mtl_command_buffer_release(rlst_mtl_command_buffer_p p_command_buffer) {
-   [(id<MTLCommandBuffer>)p_command_buffer release]; 
-}
-
 rlst_mtl_compute_command_encoder_p
 rlst_mtl_command_buffer_compute_command_encoder(
     rlst_mtl_command_buffer_p p_command_buffer, unsigned int dispatch_type) {

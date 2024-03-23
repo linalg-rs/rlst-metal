@@ -7,3 +7,8 @@ edition = "2021"
 bindgen = "*"
 cc = "1.0"
 num = "*"
+
+[dev-dependencies]
+rlst = { git = "https://github.com/linalg-rs/rlst.git"}
+blas-src = { version = "0.9", features = ["accelerate"]}
+lapack-src = { version = "0.9", features = ["accelerate"]}

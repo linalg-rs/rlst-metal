@@ -73,7 +73,6 @@ rlst_mtl_command_buffer_p rlst_mtl_command_queue_command_buffer(rlst_mtl_command
 
 void rlst_mtl_command_buffer_wait_until_completed(rlst_mtl_command_buffer_p p_command_buffer);
 void rlst_mtl_command_buffer_commit(rlst_mtl_command_buffer_p p_command_buffer);
-void rlst_mtl_command_buffer_release(rlst_mtl_command_buffer_p p_command_buffer);
 rlst_mtl_compute_command_encoder_p rlst_mtl_command_buffer_compute_command_encoder(rlst_mtl_command_buffer_p p_command_buffer, unsigned int dispatch_type);
 
 /* MPS Matrix Descriptor */

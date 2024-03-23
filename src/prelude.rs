@@ -132,14 +132,6 @@ impl MetalCommandBuffer {
     }
 }
 
-impl Drop for MetalCommandBuffer {
-    fn drop(&mut self) {
-        unsafe {
-            raw::rlst_mtl_command_buffer_release(self.command_buffer_p);
-        }
-    }
-}
-
 pub struct MpsMatrixDescriptor {
     desc: raw::rlst_mtl_mps_matrix_descriptor_p,
 }
